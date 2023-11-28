@@ -50,18 +50,18 @@ function useJava21 {
   pei "java -version"
 }
 
-# Create a simple Spring Boot application
-function createAppWithInitializr {
-  displayMessage "Create a Spring Boot 2.6.0 application"
-  pei "export SPRING_BOOT_VERSION=2.6.0"
-  pei "export DEPENDENCIES=web,actuator"
-  pei "curl https://start.spring.io/starter.tgz -d dependencies=$DEPENDENCIES -d javaVersion=8 -d bootVersion=$SPRING_BOOT_VERSION -d type=maven-project | tar -xzf - || exit"
+# Clone a simple Spring Boot application
+function cloneApp {
+  displayMessage "Clone a Spring Boot 2.6.0 application"
+  pei "git clone https://github.com/dashaun/hello-spring-boot-2-6.git ./"
 }
 
 # Start the Spring Boot application
 function springBootStart {
+  PROMPT_TIMEOUT=10
   displayMessage "Start the Spring Boot application"
   pei "./mvnw -q clean package spring-boot:start -DskipTests 2>&1 | tee '$1' &"
+  PROMPT_TIMEOUT=5
 }
 
 # Stop the Spring Boot application
@@ -112,17 +112,24 @@ function statsSoFarTable {
 
   # Spring Boot 2.6 with Java 8
   #STARTUP1=$(sed -nE 's/.* in ([0-9]+\.[0-9]+) seconds.*/\1/p' < java8with2.6.log)
-  #STARTUP1=$(grep -o 'Started DemoApplication in .*' < java8with2.6.log)
+  #STARTUP1=$(grep -o 'Started HelloSpringApplication in .*' < java8with2.6.log)
   MEM1=$(cat java8with2.6.log2)
   printf "%-35s %-25s %-15s %s\n" "Spring Boot 2.6 with Java 8" "$(startupTime 'java8with2.6.log')" "$MEM1" "-"
 
   # Spring Boot 3.1 with Java 21
-  #STARTUP2=$(grep -o 'Started DemoApplication in .*' < java21with3.1.log)
+  #STARTUP2=$(grep -o 'Started HelloSpringApplication in .*' < java21with3.1.log)
   MEM2=$(cat java21with3.1.log2)
   PERC2=$(bc <<< "scale=2; 100 - ${MEM2}/${MEM1}*100")
   printf "%-35s %-25s %-15s %s \n" "Spring Boot 3.1 with Java 21" "$(startupTime 'java21with3.1.log')" "$MEM2" "$PERC2%"
   
   echo "--------------------------------------------------------------------------------------------"
+  echo "That's just infrastructure savings, we haven't even started talking about the security yet."
+  echo "The latest version is getting OSS security updates."
+  echo "Spring Boot 2.5 (or older) is no longer getting support."
+  echo "Spring Boot 2.7 OSS support ended 2023-11-24"
+  echo "Spring Boot 2.6 commercial support ends 2024-02-24"
+  echo ""
+  echo "Spring Boot 3.2 was released 2023-11-23, you should be using that now!"
 }
 
 # Display Docker image statistics
@@ -135,13 +142,13 @@ initSDKman
 init
 useJava8
 talkingPoint
-createAppWithInitializr
+cloneApp
 talkingPoint
 springBootStart java8with2.6.log
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(jps | grep 'DemoApplication' | cut -d ' ' -f 1)" java8with2.6.log2
+showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java8with2.6.log2
 talkingPoint
 springBootStop
 talkingPoint
@@ -153,7 +160,7 @@ springBootStart java21with3.1.log
 talkingPoint
 validateApp
 talkingPoint
-showMemoryUsage "$(jps | grep 'DemoApplication' | cut -d ' ' -f 1)" java21with3.1.log2
+showMemoryUsage "$(jps | grep 'HelloSpringApplication' | cut -d ' ' -f 1)" java21with3.1.log2
 talkingPoint
 springBootStop
 talkingPoint
